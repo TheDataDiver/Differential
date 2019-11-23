@@ -139,3 +139,37 @@ for files in $allfqcdetails
 do
 awk -F"\t" ' NR == 4 { printf "%-30s", substr($2, 1, length($2)-6)}; NR == 7 { printf "%-25s",$2 }; NR == 8 { printf "%-25s", $2 }; NR == 9 { printf "%-25s", $2 }; NR == 10 { printf "%-25s\n", $2 }' $files
 done
+
+####################### 7.0 PRINTING IN A TABLE, ALL MODULES THAT FAILED OR WARNED FOR ALL FQCED SAMPLES  #######################
+
+allfqcsummaries=$(find ${theoutputdirectory} -name '*summary.txt' | sort)
+
+echo -e "\n"
+
+awk -F"\t" '
+BEGIN { print "========================================================================================================================="
+printf "%-30s %-20s %-30s %-20s %-30s\n","Sample name","Modules Failed","Name of Failed Modules","Modules Warned","Name of Warned Modules"
+print "========================================================================================================================="
+} '
+
+passcount=$(awk -F"\t" '/PASS/ {count++} END {print count}' $allfqcsummaries)
+failcount=$(awk -F"\t" '/FAIL/ {count++} END {print count}' $allfqcsummaries)
+warncount=$(awk -F"\t" '/WARN/ {count++} END {print count}' $allfqcsummaries)
+
+for files in $allfqcsummaries
+do
+### Setting the variable to search the fastqc summary.txt file and retrieves the sample name, removing the fq.gz extension, to make it neater
+nameofsample=$(awk -F"\t" '{print substr($3, 1, length($3)-6)}' $files | uniq)
+### Setting variable to count the number of failed modules for the sample
+failcount=$(awk -F"\t" '/FAIL/ {count++} END {print count}' $files)
+### Setting variable to count the number of warned modules for the sample
+warncount=$(awk -F"\t" '/WARN/ {count++} END {print count}' $files)
+### setting variable to print the names of the failed modules for the sample
+failmodules=$(awk -F"\t" '$1 == "FAIL" {print $2}' $files)
+### setting the variable to print the names of the warned modules for the sample
+warnedmodules=$(awk -F"\t" '$1 == "WARN" {print $2}' $files)
+
+### Printing a table with all the aforementioned variables, outputting it in a neat fashion
+printf {"%-30s %-20s %-30s %-20s %-30s\n","$nameofsample","$failcount","$failmodules","$warncount","$warnedmodules"}
+
+done
