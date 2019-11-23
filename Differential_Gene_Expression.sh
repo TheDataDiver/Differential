@@ -243,3 +243,14 @@ done
 }
 
 failedfastqcselection
+
+
+####################### 10.0 CREATING DIRECTORY FOR ALIGNMENT OUTPUT, COPYING REFERENCE GENOME FROM ORIGINAL RAW DATA PATH TO ALIGNMENT OUTPUT DIRECTORY #######################
+
+mkdir ${theoutputdirectory}/alignment
+
+### Searches the path specified by the user in step 2.0, and copies the reference genome, and unzips it. It then finds the copied/unzipped reference genome and echos its path to the user
+find ${rawdatamasterpath} -type f -name "*fasta.gz" | xargs -I {} cp {} $theoutputdirectory/alignment
+find ${theoutputdirectory}/alignment -type f -name  "*fasta.gz" | xargs -I {} gunzip {}
+referencegenomename=$(find ${theoutputdirectory}/alignment -name '*.fasta')
+echo -e "\nReference genome file has been copied to output directory: ${referencegenomename} \n"
