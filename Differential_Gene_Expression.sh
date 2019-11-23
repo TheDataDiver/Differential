@@ -265,3 +265,16 @@ read bowtie2index
 echo -e "\nPlease wait while the bowtie index is being built... \n"
 find ${theoutputdirectory}/alignment -type f -name  "*.fasta" | xargs -I {} bowtie2-build --quiet --threads 50 {} $bowtie2index
 echo -e "The bowtie index has been built"
+
+
+####################### 12.0 Aligning/Mapping the read pairs to THE REFERENCE Genome, and converting to BAM format  ##############
+
+### Searches the rawdata subdirectpry for all the fq.gz files (those selected in the array by the user, were moved to the failedfastqc subdirectory, and thus won't be found
+### It then removes the _1.fq.gz from the file name, leaving Slender_216_L8. Uniq gets rid of the duplicate lines
+fqsortedfiles=$(find ${theoutputdirectory}/rawdata -type f -name "*.fq.gz" | sort | rev | cut -c 9- | rev | uniq)
+for fqcfile in  ${fqsortedfiles};
+do
+outputbamname=$(echo "$fqcfile" | awk -F"/" '{print $NF}')
+echo -e "\nNow aligning: ${fqcfile}, please wait"
+bowtie2 -x $bowtie2index -1 ${fqcfile}_1.fq.gz -2 ${fqcfile}_2.fq.gz --no-mixed --no-discordant --no-unal -p 50 | samtools view -bS - > ${theoutputdirectory}/alignment/${outputbamname}.bam
+done
