@@ -345,3 +345,24 @@ cat $retrievecounts | awk 'BEGIN {OFS="\t"} {totalsum=0; for(i=7; i<=NF; i++) {t
 echo -e "Gene\t${lifecyclename}" | cat - ${theoutputdirectory}/counts/${lifecyclename}_mean_count.txt > ${theoutputdirectory}/counts/${lifecyclename}_mean_counts.txt
 rm -fr ${theoutputdirectory}/counts/${lifecyclename}_mean_count.txt
 done
+
+
+####################### 17.0 Merging the mean count tab-delimited files into a single tab-delimited file, containing all statistical mean of the counts per gene for all lifecycle  ############
+
+allcountfiles=$(find ${theoutputdirectory}/counts -name "*_mean_counts.txt" | sort)
+
+touch ${theoutputdirectory}/counts/Mergedtemp_mean_count.txt
+
+### Finds all the count files and pastes them into a single folder
+paste -d'\t' ${allcountfiles} > ${theoutputdirectory}/counts/Mergedtemp_mean_count.txt
+
+### Keeps the 1st, 2nd, 4th and then every other column. This makes it scalable if the user decides to add more data from other lifecycles
+awk 'BEGIN {IFS="\t"} {OFS="\t"} {printf("%s\t", $1); for (i=2; i<=NF; i+=2) {printf("%s\t", $i);} printf("\n");}' ${theoutputdirectory}/counts/Mergedtemp_mean_count.txt > ${theoutputdirectory}/counts/Merged_mean_count.txt
+
+rm -fr ${theoutputdirectory}/counts/Mergedtemp_mean_count.txt
+echo -e "\nThe mean gene count for the samples of each lifecycle has been merged into a single tab-delimited .txt file: ${theoutputdirectory}/counts/Merged_mean_count.txt \n"
+
+### Prints the header of the merged mean count file in a nice table format. The .txt file is tab delimited.
+head ${theoutputdirectory}/counts/Merged_mean_count.txt | column -t
+
+echo -e "\nThe script has come to an end.. Unfortunately all good things must come to an end. Analysis complete! Beam me up, Scotty."
