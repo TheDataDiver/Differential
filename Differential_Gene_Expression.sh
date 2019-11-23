@@ -173,3 +173,26 @@ warnedmodules=$(awk -F"\t" '$1 == "WARN" {print $2}' $files)
 printf {"%-30s %-20s %-30s %-20s %-30s\n","$nameofsample","$failcount","$failmodules","$warncount","$warnedmodules"}
 
 done
+
+
+####################### 8.0 ASKING THE USER IF HE'D LIKE TO VIEW IN FIREFOX, THE OUTPUT FOR A SPECIFIC FASTQC OUTPUT ##############
+
+openfastqchtml () {
+echo -e "\n \n"
+read -p "Based on the above information, would you like to view the report of a specific fastqc sample? (y/n)" choice
+if [ "$choice" = "y" ];
+then
+echo -e "Please type the name of the sample that you'd like to view the report of. Eg. 219_L8_1"
+### Reads user input and saves it as a variable, subsequently reads the variable and finds files containing this variable that ends in html
+read viewreportof
+### Finds the html file containing the characters that the user has inputted, then opens it in firefox. Eg. Slender will open all slender html, 219_L8 will open both 219_L8_1 and 219_L8_2
+firefoxlinks=$(find ${theoutputdirectory}/fastqc_result -name "*$viewreportof*" -a -name "*.html" | awk '{print}' ORS=" ")
+firefox ${firefoxlinks}
+echo -e "\n"
+openfastqchtml
+else
+:
+fi
+}
+
+openfastqchtml
