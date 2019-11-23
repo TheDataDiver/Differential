@@ -196,3 +196,50 @@ fi
 }
 
 openfastqchtml
+
+
+####################### 9.0 CREATION OF ARRAY THAT ENABLES FILTERING OF FASTQC OUTPUT VIA USER INPUT, SO THAT THOSE FASTQC SAMPLES THAT THE USER DEEMED TO HAVE FAILED, ARE NOT ALIGNED  #######################
+
+mkdir ${theoutputdirectory}/failedfastqc/
+
+listingthefiles=($(find "${theoutputdirectory}/rawdata" -type f -name '*.fq.gz' | sort | tr '\n' ' '))
+
+### Creating the array for the user to select files which he has deemed t have failed FASTQC analysis
+failedfastqcselectionmenu () {
+echo -e "\n\nAvailable options:"
+for i in ${!listingthefiles[@]}; do
+printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${listingthefiles[i]}"
+done
+[[ "$msg" ]] && echo "$msg";:
+}
+
+
+failedfastqcselection () {
+echo -e "\n"
+prompttheuser="Select files that failed FASTQC analysis, these files will not be aligned.  Enter an option (enter again to uncheck), press RETURN without any input to finalise selection:"
+while failedfastqcselectionmenu && read -rp "$prompttheuser" num && [[ "$num" ]]; do
+[[ "$num" != *[![:digit:]]* ]] && ((num > 0 && num <= ${#listingthefiles[@]} )) || {
+msg="Option is not valid: $num"; continue
+}
+
+if [ $num == ${#listingthefiles[@]} ]; then
+exit
+fi
+
+((num--)); msg="${listingthefiles[num]} was ${choices[num]:+un-}selected"
+[[ "${choices[num]}" ]] && choices[num]="" || choices[num]="x"
+done
+
+### Following selection of the files and finalising the input by pressing RETURN, it will echo which files have been selected to be excluded from BAM alignment.
+### These files will be moved to the failedfastqc subdirectory within the parent outputdirectory. They wont be aligned.
+echo -e "\n"
+printf "The following files will be excluded from BAM alignment"; msg=""
+for i in ${!listingthefiles[@]}; do
+[[ "${choices[i]}" ]] && { printf "%s" "${listingthefiles[i]}"; msg="";
+echo -e "\n"
+mv ${listingthefiles[i]} ${theoutputdirectory}/failedfastqc/
+}
+done
+}
+
+failedfastqcselection
