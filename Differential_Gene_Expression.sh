@@ -333,3 +333,15 @@ bedtools multicov -bams ${lifecyclebamfiles} -bed ${thebedfile} > ${theoutputdir
 lifecyclecountfile=$(find ${theoutputdirectory}/counts -name "*${lifecyclename}.counts.txt")
 echo -e "Gene counts on ${lifecyclename} samples were succesful and have been outputted to ${lifecyclecountfile}"
 done
+
+
+####################### 16.0 Generating mean count tab-delimited files with headers for each lifecycle, that gives the statistical mean of the counts per gene for each group  ##############
+
+awk '{print $2}' ${sampledetailfile} | sort | uniq | while read -r lifecyclename
+do
+retrievecounts=$(find ${theoutputdirectory}/counts -name *${lifecyclename}.counts.txt)
+### Adds collumns seven and onwards and divides it by the number of collumns it has counted, to generate the mean gene count for all samples from a single lifecycle stage
+cat $retrievecounts | awk 'BEGIN {OFS="\t"} {totalsum=0; for(i=7; i<=NF; i++) {totalsum+=$i}; mean=totalsum/(NF-6); print ($4,mean)}' > ${theoutputdirectory}/counts/${lifecyclename}_mean_count.txt
+echo -e "Gene\t${lifecyclename}" | cat - ${theoutputdirectory}/counts/${lifecyclename}_mean_count.txt > ${theoutputdirectory}/counts/${lifecyclename}_mean_counts.txt
+rm -fr ${theoutputdirectory}/counts/${lifecyclename}_mean_count.txt
+done
