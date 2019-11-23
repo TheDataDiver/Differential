@@ -289,3 +289,28 @@ echo -e "\n"
 cp ${bedfilename} ${theoutputdirectory}/alignment
 bedfilecopiedname=$(find ${theoutputdirectory}/alignment -name *.bed)
 echo -e "The bedfile has been succesfully copied to output directory: $bedfilecopiedname \n"
+
+
+####################### 14.0 CREATING BAM INDEX FROM ALL BAM FILES  ##############
+
+thebamfiles=$(find ${theoutputdirectory}/alignment -name '*.bam' | sort)
+
+for files in $thebamfiles;
+do
+### Removes the _1 or _2 from the .bam files it has found in the alignment subdirectory, and saves it as a variable, which will be used to name the sorted.bam file
+bamfilename=${files%%.*}
+echo -e "Currently sorting the bam file of ${bamfilename}"
+### Sorting the bam files
+samtools sort -@ 50 $files -o ${bamfilename}.sorted.bam
+echo -e "Bam file of ${bamfilename} has been succesfully sorted\n"
+done
+
+sortedbamfiles=$(find ${theoutputdirectory}/alignment -name '*.sorted.bam' | sort)
+
+for files in $sortedbamfiles
+do
+### Indexing the sorted bam files
+samtools index -@ 50 $files
+echo -e "Currently creating the index for $files"
+echo -e "Index succesfully created for $files \n"
+done
