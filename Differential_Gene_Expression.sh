@@ -21,3 +21,33 @@ fi
 }
 
 inputpathforoutput
+
+
+####################### 2.0 Creating function and running it: ASKING USER TO INPUT THE PATH OF THE  DIRECTORY WHERE ALL RAW DATA IS STORED, THEN STORING THE PATH AS A VARIABLE. THEN COPYING ALL FQ.GZ FILES INTO OUTPUTDIRECTORY/RAWDATA #######################
+
+copyingrawdatafiles () {
+echo -e "\nPlease input the full path of the main directory where ALL THE RAW DATA IS STORED (Do not include / at the end of the path)."
+### Reads the input from the user and saves it as a variable called rawdatamasterpath
+read rawdatamasterpath
+echo -e "\n"
+### Finds all files ending in fq.gz in the directory the user specified. It then prints it in a column and numbers the fq.gz files so the user can see how many sequencing data files is present
+find ${rawdatamasterpath} -name '*.fq.gz' | sort | nl | column -t
+echo -e "\n"
+read -p "Are your FASTQ sequencing data files and sample details listed above? (y/n)" choice
+if [ "$choice" = "y" ];
+then
+echo -e "\n"
+allthefqfiles=$(find ${rawdatamasterpath} -name '*.fq.gz' | sort)
+### Creates a subdirectory called rawdata, in the parent directory (theoutputdirectory). All raw data will subsequently be stored here.
+### All files ending in fq.gz are then copied into this subdirectory
+mkdir ${theoutputdirectory}/rawdata
+cp -r ${allthefqfiles} ${theoutputdirectory}/rawdata
+echo -e "The above listed files have now been succesfully copied to the output directory: ${theoutputdirectory}/rawdata \n"
+### Safety loop, if user enters the wrong path, his fq.gz files will not be listed as it will not be able to find them. User then types n, which will bring him back to the start of the function
+else
+echo -e "\nThe specified path of the directory was probably wrong, try re-entering the path again\n"
+copyingrawdatafiles;
+fi
+}
+
+copyingrawdatafiles
