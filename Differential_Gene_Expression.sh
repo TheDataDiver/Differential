@@ -254,3 +254,14 @@ find ${rawdatamasterpath} -type f -name "*fasta.gz" | xargs -I {} cp {} $theoutp
 find ${theoutputdirectory}/alignment -type f -name  "*fasta.gz" | xargs -I {} gunzip {}
 referencegenomename=$(find ${theoutputdirectory}/alignment -name '*.fasta')
 echo -e "\nReference genome file has been copied to output directory: ${referencegenomename} \n"
+
+
+####################### 11.0 Changes directory to output directory and Builds bowtie2 index files from the unzipped reference genome  ##############
+
+cd ${theoutputdirectory}/alignment
+echo -e "Input the desired name for the bowtie2 index that is about to be built. Eg -> Trypanosome_Brucei"
+read bowtie2index
+### Allows user to input the name for the bowtie index that is about to be built.
+echo -e "\nPlease wait while the bowtie index is being built... \n"
+find ${theoutputdirectory}/alignment -type f -name  "*.fasta" | xargs -I {} bowtie2-build --quiet --threads 50 {} $bowtie2index
+echo -e "The bowtie index has been built"
