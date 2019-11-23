@@ -314,3 +314,22 @@ samtools index -@ 50 $files
 echo -e "Currently creating the index for $files"
 echo -e "Index succesfully created for $files \n"
 done
+
+####################### 15.0 RUNNING BEDTOOLS ON ALL BAM INDEXES THAT WERE NOT EXCLUDED DURING FASTQC FAILED SELECTION  ##############
+
+cd ${theoutputdirectory}
+mkdir ${theoutputdirectory}/counts
+
+thebedfile=$(find ${theoutputdirectory}/alignment -name *.bed)
+
+### Prints the second column of the sample detail file. This collumn contains the lifecycle stage names, uniq to get rid of multiple duplicate reads
+### then reads the lifecycle stage name and searches for files starting with it and ending in .sorted.bam. Bedtools then performs gene counts on all these files (Slender or Stumpy)
+### and outputs the gene counts into a .txt file. This .txt file will contain all gene counts for all samples of each lifecycle stage
+awk '{print $2}' ${sampledetailfile} | sort | uniq | while read -r lifecyclename
+do
+lifecyclebamfiles=$(find ${theoutputdirectory}/alignment -name "*.sorted.bam" -a -name "${lifecyclename}*" | sort)
+echo -e "Now performing gene counts of all ${lifecyclename} samples"
+bedtools multicov -bams ${lifecyclebamfiles} -bed ${thebedfile} > ${theoutputdirectory}/counts/${lifecyclename}.counts.txt
+lifecyclecountfile=$(find ${theoutputdirectory}/counts -name "*${lifecyclename}.counts.txt")
+echo -e "Gene counts on ${lifecyclename} samples were succesful and have been outputted to ${lifecyclecountfile}"
+done
