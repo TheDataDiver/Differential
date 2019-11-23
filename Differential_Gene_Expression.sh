@@ -51,3 +51,32 @@ fi
 }
 
 copyingrawdatafiles
+
+
+####################### 3.0 CREATING FUNCTION AND RUNNING IT: ASKING USER TO INPUT THE NAME OF THE FILE CONTAINING SAMPLE DETAILS #######################
+
+gettingsampledetails () {
+echo -e "\nPlease provide ONLY THE NAME (not its path) of the file which contains the sample details. Eg. fqfiles"
+### Reads the input from the user and saves the name of the sample detail file as a variable
+read sampledetailfilename
+echo -e "\n"
+### Finds the sample detail file, opens it and prints the lifecycle name, and the name of both the forward and reverse sequence files
+find ${rawdatamasterpath} -type f -name ${sampledetailfilename} | xargs -I {} cat {} | awk '{print $2, $3, $NF;}' | column -t | nl
+echo -e "\n"
+read -p "Are your sample details listed above? (y/n)" choice2
+if [ "$choice2" = "y" ];
+then
+echo -e "\n"
+### Finds the sample detail file by searching within the raw data path that is saved as a variable, for the sample detail file name which is saved as a variable
+thesamplefile=$(find ${rawdatamasterpath} -type f -name ${sampledetailfilename})
+### Copies the sample detail file to the rawdata subdirectory in parent outputdirectory
+cp ${thesamplefile} ${theoutputdirectory}/rawdata
+echo -e "The file containing sample details has been copied to the output directory: ${theoutputdirectory}/rawdata \n"
+else
+### Safety loop, if user entered the wrong file name for the sample detail, lifecyclenames and forward/reverse sequnce file names will not be printed. Typing n will loop the user back to the start of the function
+echo -e "\n The specified path of the file which contains the sample details was probably wrong, try re-entering the path again. \n"
+gettingsampledetails;
+fi
+}
+
+gettingsampledetails
