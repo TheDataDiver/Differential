@@ -278,3 +278,14 @@ outputbamname=$(echo "$fqcfile" | awk -F"/" '{print $NF}')
 echo -e "\nNow aligning: ${fqcfile}, please wait"
 bowtie2 -x $bowtie2index -1 ${fqcfile}_1.fq.gz -2 ${fqcfile}_2.fq.gz --no-mixed --no-discordant --no-unal -p 50 | samtools view -bS - > ${theoutputdirectory}/alignment/${outputbamname}.bam
 done
+
+
+####################### 13.0 COPYING BEDFILE TO OUTPUT DIRECTORY  ##############
+
+echo -e "\n"
+bedfilename=$(find ${rawdatamasterpath} -name *.bed)
+echo -e "\n"
+### Copies the bed file from the raw data path specified by the user, to the alignment subdirectory in the parent outputdirectory
+cp ${bedfilename} ${theoutputdirectory}/alignment
+bedfilecopiedname=$(find ${theoutputdirectory}/alignment -name *.bed)
+echo -e "The bedfile has been succesfully copied to output directory: $bedfilecopiedname \n"
