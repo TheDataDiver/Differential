@@ -80,3 +80,31 @@ fi
 }
 
 gettingsampledetails
+
+
+####################### 4.0 INSERTING "STAGE OF LIFECYCLE" TAKEN FROM THE SAMPLE DETAIL FILE INTO THE FILENAME OF THE COPIED RAW DATA FILES  #######################
+
+### Sets a variable for the path of the sampledetail file, which has been copied to the output directory
+sampledetailfile=$(find ${theoutputdirectory} -type f -name ${sampledetailfilename})
+### Finds all the copied fq.gz files and sorts them alphabetically before displaying them in a table
+find ${theoutputdirectory}/rawdata -name '*.fq.gz' | sort | nl | column -t
+### Counts the total number of found fq.gz files
+numberoffiles=$(find ${theoutputdirectory}/rawdata -name '*.fq.gz' | grep -c "/*.fq.gz")
+echo -e "\nThere are ${numberoffiles} FASTQ sequencing data files in the output directory. \n"
+echo "The raw data files as listed above from the output directory, shall now be renamed to include the sample detail name, to help in the identification of raw data. \n"
+unset IFS
+### Sets he columns of the sample detail file as variables, then uses these variables to rename the fq.gz files to contain the lifecyclename at the start of the file name
+while read n1 lifecyclename forwardsequence reversesequence;
+do
+originalpathforward="${theoutputdirectory}/rawdata/$forwardsequence"
+originalpathreverse="${theoutputdirectory}/rawdata/$reversesequence"
+newpathforward=${theoutputdirectory}/rawdata/${lifecyclename}"_${forwardsequence}"
+newpathreverse=${theoutputdirectory}/rawdata/${lifecyclename}"_${reversesequence}"
+mv ${originalpathforward} ${newpathforward}
+mv ${originalpathreverse} ${newpathreverse}
+done < ${sampledetailfile}
+
+### Finds the newly renamed fq.gz files and prints it on the screen for the user to see. Renaming of the files will enable for easier identification during fastqc etc
+ls -l ${theoutputdirectory}/rawdata | grep "/*.fq.gz" | awk '{print $NF;}' | nl | column -t
+echo -e "\n"
+echo -e "Raw data files have now been succesfuly renamed to include the sample details as shown above. \n"
