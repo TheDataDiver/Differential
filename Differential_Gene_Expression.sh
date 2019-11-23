@@ -108,3 +108,18 @@ done < ${sampledetailfile}
 ls -l ${theoutputdirectory}/rawdata | grep "/*.fq.gz" | awk '{print $NF;}' | nl | column -t
 echo -e "\n"
 echo -e "Raw data files have now been succesfuly renamed to include the sample details as shown above. \n"
+
+
+####################### 5.0 MAKING DIRECTORY FOR FASTQC RESULT OUTPUT. OUTPUTDIRECTORY/FASTQC_RESULT  #######################
+
+mkdir ${theoutputdirectory}/fastqc_result
+
+
+####################### 5.1 PERFORMING FASTQC ANALYSIS ON ALL SAMPLES  #######################
+
+echo -e "\nPlease wait while all samples undergo FASTQC analysis"
+fqcallfiles=$(find ${theoutputdirectory}/rawdata -name '*.fq.gz' | sort)
+### Performs fastqc on all fq.gz files in the output directory. Fastqc is silenced and automatically extracts the output
+fastqc -t 50 --quiet -o ${theoutputdirectory}/fastqc_result --extract ${fqcallfiles}
+find ${theoutputdirectory}/fastqc_result -name '*.zip' | xargs rm
+echo -e "\nFASTQC analysis complete for all samples.\n"
