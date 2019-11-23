@@ -123,3 +123,19 @@ fqcallfiles=$(find ${theoutputdirectory}/rawdata -name '*.fq.gz' | sort)
 fastqc -t 50 --quiet -o ${theoutputdirectory}/fastqc_result --extract ${fqcallfiles}
 find ${theoutputdirectory}/fastqc_result -name '*.zip' | xargs rm
 echo -e "\nFASTQC analysis complete for all samples.\n"
+
+
+####################### 6.0 PRINTING IN A TABLE, THE SAMPLE NAME, TOTAL SEQUENCES, NUMBER OF POOR QUALITY READS, SEQUENCE LENGTH AND GC CONTENT OF ALL FQCED SAMPLES  ####################
+
+allfqcdetails=$(find ${theoutputdirectory} -name '*fastqc_data.txt' | sort)
+
+awk -F"\t" '
+BEGIN { print "========================================================================================================================="
+printf "%-25s %-25s %-25s %-25s %-25s\n","Sample name","Total sequences","Poor quality","Sequence length","GC content"
+print "========================================================================================================================="
+} '
+
+for files in $allfqcdetails
+do
+awk -F"\t" ' NR == 4 { printf "%-30s", substr($2, 1, length($2)-6)}; NR == 7 { printf "%-25s",$2 }; NR == 8 { printf "%-25s", $2 }; NR == 9 { printf "%-25s", $2 }; NR == 10 { printf "%-25s\n", $2 }' $files
+done
